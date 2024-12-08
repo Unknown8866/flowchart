@@ -6,7 +6,7 @@
   <title>Flowchart Decision Tool</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'STIX Two Math', 'Arial', sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f4f4f4;
@@ -60,44 +60,37 @@
       display: none;
       text-align: center;
     }
-    .notice {
-      background-color: #e7f3fe;
-      border-left: 6px solid #2196F3;
-      padding: 10px;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
   </style>
 </head>
 <body>
-  <!-- Left panel -->
+  <!-- Left Panel -->
   <div class="left-panel">
     <div class="container">
       <h1>Flowchart Decision Tool</h1>
       <p>Decide to use copula according to Table 2 among the methods in Table 1. If Yes:</p >
       <div class="form-group">
-        <label for="p_main_continuous">Is P_main continuous?</label>
+        <label for="p_main_continuous">Step 1: Is P<sub>main</sub> continuous?</label>
         <select id="p_main_continuous">
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="p_main_normal">Is P_main normally distributed?</label>
+        <label for="p_main_normal">Step 2: Is P<sub>main</sub> normally distributed?</label>
         <select id="p_main_normal">
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="correlation">Is Σ P_k * Y_k correlated with W?</label>
+        <label for="correlation">Step 3.a: Is &Sigma; P<sub>t,k</sub> &times; &gamma;<sub>k</sub> correlated with W?</label>
         <select id="correlation">
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="exogenous_w">Is at least one exogenous W continuous, significantly non-normal, and sufficiently relevant?</label>
+        <label for="exogenous_w">Step 3.b: Is at least one exogenous W continuous, significantly non-normal, and sufficiently relevant?</label>
         <select id="exogenous_w">
           <option value="yes">Yes</option>
           <option value="no">No</option>
@@ -107,13 +100,13 @@
     </div>
   </div>
 
-  <!-- Right panel -->
+  <!-- Right Panel -->
   <div class="right-panel">
     <div class="result" id="result">Result will be displayed here</div>
   </div>
 
   <script>
-    function determineMethod(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant) {
+    function determineMethod(P_main_continuous, P_main_normal, sum_Ptk_gamma_k_correlated, W_continuous_and_relevant) {
       // Step 1: Check if P_main is continuous
       if (!P_main_continuous) {
         return "Use SORE (Qian and Xie 2024)";
@@ -128,8 +121,8 @@
           return "Check potential bias using bootstrap";
         }
       } else {
-        // Step 3a: Check if Σ P_k * Y_k is correlated with W
-        if (sum_Pk_Yk_correlated) {
+        // Step 3a: Check if Σ P<sub>t,k</sub> &times; γ<sub>k</sub> is correlated with W
+        if (sum_Ptk_gamma_k_correlated) {
           return "Use 2sCOPE or MLE (Haschka 2022) or SORE";
         } else {
           return "Use P&G";
