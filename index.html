@@ -105,25 +105,41 @@
   </div>
 
   <script>
-    function evaluateFlowchart() {
-      const p_main_continuous = document.getElementById('p_main_continuous').value === 'yes';
-      const p_main_normal = document.getElementById('p_main_normal').value === 'yes';
-      const correlation = document.getElementById('correlation').value === 'yes';
-      const exogenous_w = document.getElementById('exogenous_w').value === 'yes';
-      
-      let result;
-      if (!p_main_continuous) {
-        result = "Use SORE (Qian and Xie 2024) if P_main is discrete";
-      } else if (p_main_normal) {
-        result = "2sCOPE or MLE (Hashka 2022 or SORE)";
-      } else if (correlation) {
-        result = "P&G";
-      } else if (exogenous_w) {
-        result = "2sCOPE";
-      } else {
-        result = "Check potential bias using bootstrap";
+    function copulaDecision(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant) {
+      // Step 1
+      if (!P_main_continuous) {
+        return "Use SORE (Qian and Xie 2024)";
       }
 
+      // Step 2
+      if (P_main_normal) {
+        // Step 3.b
+        if (W_continuous_and_relevant) {
+          return "2sCOPE";
+        } else {
+          return "Check potential bias using bootstrap";
+        }
+      } else {
+        // Step 3.a
+        if (sum_Pk_Yk_correlated) {
+          return "2sCOPE or MLE (Hashka 2022 or SORE)";
+        } else {
+          return "P&G";
+        }
+      }
+    }
+
+    function evaluateFlowchart() {
+      // 获取用户输入
+      const P_main_continuous = document.getElementById('p_main_continuous').value === 'yes';
+      const P_main_normal = document.getElementById('p_main_normal').value === 'yes';
+      const sum_Pk_Yk_correlated = document.getElementById('correlation').value === 'yes';
+      const W_continuous_and_relevant = document.getElementById('exogenous_w').value === 'yes';
+
+      // 调用 copulaDecision 函数
+      const result = copulaDecision(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant);
+
+      // 显示结果
       const resultDiv = document.getElementById('result');
       resultDiv.style.display = 'block';
       resultDiv.textContent = result;
