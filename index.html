@@ -60,13 +60,21 @@
       display: none;
       text-align: center;
     }
+    .notice {
+      background-color: #e7f3fe;
+      border-left: 6px solid #2196F3;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-  <!-- 左侧面板 -->
+  <!-- Left panel -->
   <div class="left-panel">
     <div class="container">
       <h1>Flowchart Decision Tool</h1>
+      <p>Decide to use copula according to Table 2 among the methods in Table 1. If Yes:</p >
       <div class="form-group">
         <label for="p_main_continuous">Is P_main continuous?</label>
         <select id="p_main_continuous">
@@ -82,14 +90,14 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="correlation">Is Σ correlated with W?</label>
+        <label for="correlation">Is Σ P_k * Y_k correlated with W?</label>
         <select id="correlation">
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="exogenous_w">Is at least one exogenous W relevant?</label>
+        <label for="exogenous_w">Is at least one exogenous W continuous, significantly non-normal, and sufficiently relevant?</label>
         <select id="exogenous_w">
           <option value="yes">Yes</option>
           <option value="no">No</option>
@@ -99,47 +107,44 @@
     </div>
   </div>
 
-  <!-- 右侧面板 -->
+  <!-- Right panel -->
   <div class="right-panel">
     <div class="result" id="result">Result will be displayed here</div>
   </div>
 
   <script>
-    function copulaDecision(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant) {
-      // Step 1
+    function determineMethod(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant) {
+      // Step 1: Check if P_main is continuous
       if (!P_main_continuous) {
         return "Use SORE (Qian and Xie 2024)";
       }
 
-      // Step 2
+      // Step 2: Check if P_main is normally distributed
       if (P_main_normal) {
-        // Step 3.b
+        // Step 3b: Check if at least one exogenous W is continuous, significantly non-normal, and sufficiently relevant
         if (W_continuous_and_relevant) {
-          return "2sCOPE";
+          return "Use 2sCOPE";
         } else {
           return "Check potential bias using bootstrap";
         }
       } else {
-        // Step 3.a
+        // Step 3a: Check if Σ P_k * Y_k is correlated with W
         if (sum_Pk_Yk_correlated) {
-          return "2sCOPE or MLE (Hashka 2022 or SORE)";
+          return "Use 2sCOPE or MLE (Haschka 2022) or SORE";
         } else {
-          return "P&G";
+          return "Use P&G";
         }
       }
     }
 
     function evaluateFlowchart() {
-      // 获取用户输入
-      const P_main_continuous = document.getElementById('p_main_continuous').value === 'yes';
-      const P_main_normal = document.getElementById('p_main_normal').value === 'yes';
-      const sum_Pk_Yk_correlated = document.getElementById('correlation').value === 'yes';
-      const W_continuous_and_relevant = document.getElementById('exogenous_w').value === 'yes';
+      const p_main_continuous = document.getElementById('p_main_continuous').value === 'yes';
+      const p_main_normal = document.getElementById('p_main_normal').value === 'yes';
+      const correlation = document.getElementById('correlation').value === 'yes';
+      const exogenous_w = document.getElementById('exogenous_w').value === 'yes';
 
-      // 调用 copulaDecision 函数
-      const result = copulaDecision(P_main_continuous, P_main_normal, sum_Pk_Yk_correlated, W_continuous_and_relevant);
+      const result = determineMethod(p_main_continuous, p_main_normal, correlation, exogenous_w);
 
-      // 显示结果
       const resultDiv = document.getElementById('result');
       resultDiv.style.display = 'block';
       resultDiv.textContent = result;
