@@ -39,7 +39,7 @@
     }
     .form-group {
       margin-bottom: 15px;
-      display: none; /* 初始隐藏每个步骤 */
+      display: none; /* 初始隐藏后续步骤 */
     }
     .form-group label {
       display: block;
@@ -75,7 +75,7 @@
       <!-- Step 1 -->
       <div class="form-group" id="step1">
         <label for="p_main_continuous">Step 1: Is P<sub>main</sub> continuous?</label>
-        <select id="p_main_continuous" onchange="showNextStep('step2')">
+        <select id="p_main_continuous" onchange="handleStep1Change()">
           <option value="">Select...</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
@@ -114,7 +114,7 @@
       </div>
 
       <!-- Evaluate Button -->
-      <button id="evaluateButton" style="display: none;" onclick="evaluateFlowchart()">Evaluate</button>
+      <button id="evaluateButton" onclick="evaluateFlowchart()">Evaluate</button>
     </div>
   </div>
 
@@ -124,31 +124,33 @@
   </div>
 
   <script>
-    // 控制动态显示
-    function showNextStep(nextStepId) {
+    // 当 Step 1 改变时调用
+    function handleStep1Change() {
       const p_main_continuous = document.getElementById('p_main_continuous').value;
-      const p_main_normal = document.getElementById('p_main_normal').value;
+      const step2 = document.getElementById('step2');
+      const step3 = document.getElementById('step3');
 
-      // 显示步骤 2
-      if (nextStepId === 'step2' && p_main_continuous === 'yes') {
-        document.getElementById('step2').style.display = 'block';
-      }
-
-      // 显示步骤 3.a 或 3.b
-      if (nextStepId === 'step3' && p_main_normal) {
-        document.getElementById('step3').style.display = 'block';
-        document.getElementById('step3a').style.display = p_main_normal === 'no' ? 'block' : 'none';
-        document.getElementById('step3b').style.display = p_main_normal === 'yes' ? 'block' : 'none';
+      // 如果选择 "No"，直接返回结果
+      if (p_main_continuous === 'no') {
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result').textContent = "Use SORE (Qian and Xie 2024) if P_main is discrete";
+        step2.style.display = 'none';
+        step3.style.display = 'none';
+      } else if (p_main_continuous === 'yes') {
+        // 如果选择 "Yes"，显示 Step 2
+        step2.style.display = 'block';
       }
     }
 
-    // 显示 "Evaluate" 按钮
-    function showEvaluateButton() {
-      const correlation = document.getElementById('correlation').value;
-      const exogenous_w = document.getElementById('exogenous_w').value;
+    // 控制动态显示 Step 3 和 Evaluate 按钮
+    function showNextStep(nextStepId) {
+      const p_main_normal = document.getElementById('p_main_normal').value;
+      const step3 = document.getElementById('step3');
 
-      if (correlation || exogenous_w) {
-        document.getElementById('evaluateButton').style.display = 'block';
+      if (p_main_normal) {
+        step3.style.display = 'block';
+        document.getElementById('step3a').style.display = p_main_normal === 'no' ? 'block' : 'none';
+        document.getElementById('step3b').style.display = p_main_normal === 'yes' ? 'block' : 'none';
       }
     }
 
@@ -190,4 +192,3 @@
   </script>
 </body>
 </html>
-
