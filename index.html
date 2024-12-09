@@ -161,15 +161,15 @@
       }
       if (P_main_normal) {
         if (W_continuous_and_relevant) {
-          return "Use 2sCOPE";
+          return "2sCOPE";
         } else {
           return "Check potential bias using bootstrap";
         }
       } else {
         if (sum_Ptk_gamma_k_correlated) {
-          return "Use 2sCOPE or MLE (Haschka 2022 or SORE)";
+          return "2sCOPE or MLE (Hashka 2022 or SORE)";
         } else {
-          return "Use P&G";
+          return "P&G";
         }
       }
     }
