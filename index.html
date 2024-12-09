@@ -39,6 +39,7 @@
     }
     .form-group {
       margin-bottom: 15px;
+      display: none; /* 初始隐藏每个步骤 */
     }
     .form-group label {
       display: block;
@@ -51,83 +52,118 @@
       font-size: 16px;
     }
     .result {
-  padding: 20px;
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 5px;
-  color: #155724;
-  font-weight: bold;
-  display: none;
-  text-align: center;
-  width: 80%; /* Adjust the width as needed */
-  margin: auto; /* Center the result box horizontally */
-}
+      padding: 20px;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 5px;
+      color: #155724;
+      font-weight: bold;
+      display: none;
+      text-align: center;
+      width: 80%;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
-  <!-- Left Panel -->
+  <!-- 左侧面板 -->
   <div class="left-panel">
     <div class="container">
       <h1>Flowchart Decision Tool</h1>
-      <p>Decide to use copula according to Table 2 among the methods in Table 1. If Yes:</p >
-      <div class="form-group">
+      <p>Decide to use copula according to Table 2 among the methods in Table 1. If Yes:</p>
+      
+      <!-- Step 1 -->
+      <div class="form-group" id="step1">
         <label for="p_main_continuous">Step 1: Is P<sub>main</sub> continuous?</label>
-        <select id="p_main_continuous">
-          <option value=" "> </option>
+        <select id="p_main_continuous" onchange="showNextStep('step2')">
+          <option value="">Select...</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
-      <div class="form-group">
+      
+      <!-- Step 2 -->
+      <div class="form-group" id="step2">
         <label for="p_main_normal">Step 2: Is P<sub>main</sub> normally distributed?</label>
-        <select id="p_main_normal">
-          <option value=" "> </option>
+        <select id="p_main_normal" onchange="showNextStep('step3')">
+          <option value="">Select...</option>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </select>
       </div>
-      <div class="form-group">
-        <label for="correlation">Step 3.a: Is &Sigma; P<sub>t,k</sub> &times; &gamma;<sub>k</sub> correlated with W?</label>
-        <select id="correlation">
-          <option value=" "> </option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
+      
+      <!-- Step 3 -->
+      <div class="form-group" id="step3">
+        <label id="step3a" style="display: none;">
+          Step 3.a: Is &Sigma; P<sub>t,k</sub> &times; &gamma;<sub>k</sub> correlated with W?
+          <select id="correlation" onchange="showEvaluateButton()">
+            <option value="">Select...</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </label>
+        
+        <label id="step3b" style="display: none;">
+          Step 3.b: Is at least one exogenous W continuous, significantly non-normal, and sufficiently relevant?
+          <select id="exogenous_w" onchange="showEvaluateButton()">
+            <option value="">Select...</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </label>
       </div>
-      <div class="form-group">
-        <label for="exogenous_w">Step 3.b: Is at least one exogenous W continuous, significantly non-normal, and sufficiently relevant?</label>
-        <select id="exogenous_w">
-          <option value=" "> </option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-      <button onclick="evaluateFlowchart()">Evaluate</button>
+
+      <!-- Evaluate Button -->
+      <button id="evaluateButton" style="display: none;" onclick="evaluateFlowchart()">Evaluate</button>
     </div>
   </div>
 
-  <!-- Right Panel -->
+  <!-- 右侧面板 -->
   <div class="right-panel">
     <div class="result" id="result">Result will be displayed here</div>
   </div>
 
   <script>
+    // 控制动态显示
+    function showNextStep(nextStepId) {
+      const p_main_continuous = document.getElementById('p_main_continuous').value;
+      const p_main_normal = document.getElementById('p_main_normal').value;
+
+      // 显示步骤 2
+      if (nextStepId === 'step2' && p_main_continuous === 'yes') {
+        document.getElementById('step2').style.display = 'block';
+      }
+
+      // 显示步骤 3.a 或 3.b
+      if (nextStepId === 'step3' && p_main_normal) {
+        document.getElementById('step3').style.display = 'block';
+        document.getElementById('step3a').style.display = p_main_normal === 'no' ? 'block' : 'none';
+        document.getElementById('step3b').style.display = p_main_normal === 'yes' ? 'block' : 'none';
+      }
+    }
+
+    // 显示 "Evaluate" 按钮
+    function showEvaluateButton() {
+      const correlation = document.getElementById('correlation').value;
+      const exogenous_w = document.getElementById('exogenous_w').value;
+
+      if (correlation || exogenous_w) {
+        document.getElementById('evaluateButton').style.display = 'block';
+      }
+    }
+
+    // 决策逻辑
     function determineMethod(P_main_continuous, P_main_normal, sum_Ptk_gamma_k_correlated, W_continuous_and_relevant) {
-      // Step 1: Check if P_main is continuous
       if (!P_main_continuous) {
         return "Use SORE (Qian and Xie 2024) if P_main is discrete";
       }
-
-      // Step 2: Check if P_main is normally distributed
       if (P_main_normal) {
-        // Step 3b: Check is at least one exogenous W is continuous, significantly non-normal, and sufficiently relevant
         if (W_continuous_and_relevant) {
           return "Use 2sCOPE";
         } else {
           return "Check potential bias using bootstrap";
         }
       } else {
-        // Step 3a: Check if Σ P<sub>t,k</sub> &times; γ<sub>k</sub> is correlated with W
         if (sum_Ptk_gamma_k_correlated) {
           return "Use 2sCOPE or MLE (Haschka 2022 or SORE)";
         } else {
@@ -148,6 +184,10 @@
       resultDiv.style.display = 'block';
       resultDiv.textContent = result;
     }
+
+    // 初始化显示第一步
+    document.getElementById('step1').style.display = 'block';
   </script>
 </body>
 </html>
+
